@@ -2,7 +2,8 @@
     ## The directory into which the user wishes to download the files.
     [string]$directory = $PSScriptRoot,
     ## Optional parameter allowing the user to specifiy the code (or comma seperated codes) of the video(s) they wish to download.
-    [string]$sessionCodes = ""
+    [string]$sessionCodes = "",
+    [string]$excludeProducts = "Dynamics 365,Microsoft 365,Power Platform" 
 )
 
 ### Variables ###
@@ -72,14 +73,16 @@ function FetchSessionData() {
     return $sessions
 }
 
-function FilterSessions($sessions, $sessionCodes) {
+function FilterSessions($sessions, $sessionCodes, $excludeProducts) {
+    
+    $filteredSessions = @();
+
     if ($sessionCodes.length -eq 0) {
         Write-Host("All sessions containing slides and/or videos will be downloaded");
-        return $sessions;
+        $filteredSessions = $sessions;
     }
     else {
         $splitSessionCodes = $sessionCodes.Split(",");
-        $filteredSessions = @();
         $codesOfSessionsFound = @();
         foreach ($s in $sessions) {
             if ($splitSessionCodes -contains $s.sessionCode) {
@@ -100,40 +103,39 @@ function FilterSessions($sessions, $sessionCodes) {
                 }
             }
         }
-        return $filteredSessions;
     }
-}
 
-function FilterSessions($sessions, $sessionCodes) {
-    if ($sessionCodes.length -eq 0) {
+    $finalFilteredSessions = @();
+    if ($excludeProducts.length -eq 0) {
         Write-Host("All sessions containing slides and/or videos will be downloaded");
-        return $sessions;
+        $finalFilteredSessions = $filteredSessions;
     }
     else {
-        $splitSessionCodes = $sessionCodes.Split(",");
-        $filteredSessions = @();
-        $codesOfSessionsFound = @();
-        foreach ($s in $sessions) {
-            if ($splitSessionCodes -contains $s.sessionCode) {
-                $filteredSessions += $s;
-                $codesOfSessionsFound += $s.sessionCode;
-            }
-        }
-        if ($filteredSessions.Count -eq 0) {
-            Write-Host("None of the session codes entered could be found. This program will now terminate.");
-            Exit;
-
-        }
-        if ($splitSessionCodes.Count -ne $codesOfSessionsFound.Count) {
-            Write-Host("Some of the session codes entered could not be found. The following sessions will not be downloaded:");
-            foreach ($sc in $splitSessionCodes) {
-                if (-not ($codesOfSessionsFound -contains $sc)) {
-                    Write-Host($sc);
+        $splitExcludeProducts = $excludeProducts.Split(",");
+        Write-Host "Number of elements in main: " $filteredSessions.Count;
+        $excludedSessions = @();
+        foreach ($s in $filteredSessions) {
+            foreach ($p in $s.products) {
+                if ($splitExcludeProducts -contains $p) {
+                    if(-not ($excludedSessions -contains $s))
+                    {
+                        $excludedSessions += $s;
+                    }
                 }
             }
         }
-        return $filteredSessions;
+
+        foreach($s in $filteredSessions)
+        {
+            if(-not ($excludedSessions -contains $s))
+            {
+                $finalFilteredSessions += $s;
+            }
+        }
     }
+
+    Write-Host "Number of elements in list: " $finalFilteredSessions.Count;
+    return $finalFilteredSessions;
 }
 
 function CleanFilename($filename) {
@@ -205,7 +207,7 @@ function DownloadSession($sessionObject, $sessionSearchCount, $directory) {
 ### Main ###
 DownloadDirectory $directory;
 $sessions = FetchSessionData;
-$sessions = FilterSessions $sessions $sessionCodes;
+$sessions = FilterSessions $sessions $sessionCodes $excludeProducts;
 $sessionSearchCount = 0;
 $sessionDownloadCount = 0;
 foreach ($s in $sessions) {
