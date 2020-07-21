@@ -14,4 +14,8 @@ pre21 is the sessionCode
 
 To download all sessions from Ignite 2019:
 
-./Download-Resources.ps1 Ignite2019
+./Download-Resources.ps1 -directory Ignite2019 -excludeProducts ""
+
+To download all sessions from Ignite 2019 with the default exclusions (Dynamics 365,Microsoft 365,Power Platform):
+
+./Download-Resources.ps1 -directory Ignite2019
