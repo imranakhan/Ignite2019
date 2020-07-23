@@ -19,3 +19,5 @@ To download all sessions from Ignite 2019:
 To download all sessions from Ignite 2019 with the default exclusions (Dynamics 365,Microsoft 365,Power Platform):
 
 ./Download-Resources.ps1 -directory Ignite2019
+
+Note: This exclusion products is a comma separated list and can be added to or removed from in the powershell script.
