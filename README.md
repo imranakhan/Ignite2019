@@ -23,4 +23,7 @@ To download all sessions from Ignite 2019 with the default exclusions (Dynamics 
 
 ./Download-Resources.ps1 -directory Ignite2019
 
-Note: This exclusion products is a comma separated list and can be added to or removed from in the powershell script.
+Note: 
+1. This exclusion products is a comma separated list and can be added to or removed from in the powershell script.
+
+2. I do not own this content, it is provided by the Microsoft techcommunity API.
